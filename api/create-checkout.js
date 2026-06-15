@@ -12,11 +12,50 @@ export default async function handler(req, res) {
   }
 
   try {
-    return res.status(200).json({
-      success: true,
-      body: req.body,
-      keyExists: !!process.env.PAYMONGO_SECRET_KEY
-    });
+    const amount = Number(req.body.amount);
+
+    const response = await fetch(
+      "https://api.paymongo.com/v1/checkout_sessions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Basic " +
+            Buffer.from(
+              process.env.PAYMONGO_SECRET_KEY + ":"
+            ).toString("base64"),
+        },
+        body: JSON.stringify({
+          data: {
+            attributes: {
+              billing: {
+                name: "Test Customer",
+                email: "test@example.com"
+              },
+              send_email_receipt: false,
+              show_description: true,
+              show_line_items: true,
+              line_items: [
+                {
+                  currency: "PHP",
+                  amount: amount,
+                  name: "APK Purchase",
+                  quantity: 1
+                }
+              ],
+              payment_method_types: ["gcash", "card"],
+              success_url: "https://raymond-apk-store.web.app/download.html",
+              cancel_url: "https://raymond-apk-store.web.app/index.html"
+            }
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    return res.status(response.status).json(data);
   } catch (err) {
     return res.status(500).json({
       error: err.message
