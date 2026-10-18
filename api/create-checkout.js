@@ -1,18 +1,47 @@
+
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://raymond-apk-store.web.app"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "POST, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   try {
-    const amount = Number(req.body.amount);
+    const amount = Number(req.body?.amount);
+
+    if (
+      !Number.isSafeInteger(amount) ||
+      amount <= 0
+    ) {
+      return res.status(400).json({
+        error: "Invalid amount"
+      });
+    }
+
+    const secretKey = process.env.PAYMONGO_SECRET_KEY;
+
+    if (!secretKey) {
+      return res.status(500).json({
+        error: "Payment configuration is missing"
+      });
+    }
 
     const response = await fetch(
       "https://api.paymongo.com/v1/checkout_sessions",
@@ -22,9 +51,7 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
           Authorization:
             "Basic " +
-            Buffer.from(
-              process.env.PAYMONGO_SECRET_KEY + ":"
-            ).toString("base64"),
+            Buffer.from(secretKey + ":").toString("base64")
         },
         body: JSON.stringify({
           data: {
@@ -39,14 +66,16 @@ export default async function handler(req, res) {
               line_items: [
                 {
                   currency: "PHP",
-                  amount: amount,
+                  amount,
                   name: "APK Purchase",
                   quantity: 1
                 }
               ],
               payment_method_types: ["qrph"],
-              success_url: "https://raymond-apk-store.web.app/download.html",
-              cancel_url: "https://raymond-apk-store.web.app/index.html"
+              success_url:
+                "https://raymond-apk-store.web.app/download.html",
+              cancel_url:
+                "https://raymond-apk-store.web.app/index.html"
             }
           }
         })
@@ -55,10 +84,20 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    return res.status(response.status).json(data);
+    if (!response.ok) {
+      console.error("PayMongo request failed:", response.status);
+
+      return res.status(502).json({
+        error: "Unable to create checkout session"
+      });
+    }
+
+    return res.status(200).json(data);
   } catch (err) {
+    console.error("Checkout error:", err.message);
+
     return res.status(500).json({
-      error: err.message
+      error: "Internal server error"
     });
   }
 }
