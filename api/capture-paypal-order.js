@@ -130,26 +130,32 @@ if (
 
     const capturedUnit = captureData.purchase_units?.[0];
     const capture = capturedUnit?.payments?.captures?.[0];
-    if (
-    captureData.id !== orderID ||
-    captureData.status !== "COMPLETED" ||
-    capture?.status !== "COMPLETED" ||
-    capture?.amount?.currency_code !== "PHP" ||
-    capture?.amount?.value !== expectedAmount
+    
+const capturedAmount = Number(capture?.amount?.value);
+const capturedAmountCentavos = Number.isFinite(capturedAmount)
+  ? Math.round(capturedAmount * 100)
+  : null;
+
+if (
+  captureData.id !== orderID ||
+  captureData.status !== "COMPLETED" ||
+  capture?.status !== "COMPLETED" ||
+  capture?.amount?.currency_code !== "PHP" ||
+  capturedAmountCentavos !== expectedAmount
 ) {
-    console.error("PayPal capture verification failed:", {
-        orderIdMatches: captureData.id === orderID,
-        orderStatus: captureData.status,
-        captureStatus: capture?.status,
-        currency: capture?.amount?.currency_code,
-        amountMatches: capture?.amount?.value === expectedAmount
-    });
+  console.error("PayPal capture verification failed:", {
+    orderIdMatches: captureData.id === orderID,
+    orderStatus: captureData.status,
+    captureStatus: capture?.status,
+    currency: capture?.amount?.currency_code,
+    capturedAmountCentavos,
+    expectedAmountCentavos: expectedAmount
+  });
 
-    return res.status(402).json({
-        error: "PayPal payment is not confirmed"
-    });
+  return res.status(402).json({
+    error: "PayPal payment is not confirmed"
+  });
 }
-
     return res.status(200).json({
       success: true,
       gameId: product.id,
