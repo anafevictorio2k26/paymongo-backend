@@ -130,11 +130,25 @@ if (
 
     const capturedUnit = captureData.purchase_units?.[0];
     const capture = capturedUnit?.payments?.captures?.[0];
-    if (captureData.status !== "COMPLETED" || capture?.status !== "COMPLETED" ||
-        capturedUnit?.custom_id !== product.id ||
-        capture?.amount?.currency_code !== "PHP" || capture?.amount?.value !== expectedAmount) {
-      return res.status(402).json({ error: "PayPal payment is not confirmed" });
-    }
+    if (
+    captureData.id !== orderID ||
+    captureData.status !== "COMPLETED" ||
+    capture?.status !== "COMPLETED" ||
+    capture?.amount?.currency_code !== "PHP" ||
+    capture?.amount?.value !== expectedAmount
+) {
+    console.error("PayPal capture verification failed:", {
+        orderIdMatches: captureData.id === orderID,
+        orderStatus: captureData.status,
+        captureStatus: capture?.status,
+        currency: capture?.amount?.currency_code,
+        amountMatches: capture?.amount?.value === expectedAmount
+    });
+
+    return res.status(402).json({
+        error: "PayPal payment is not confirmed"
+    });
+}
 
     return res.status(200).json({
       success: true,
