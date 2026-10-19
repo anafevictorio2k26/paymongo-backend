@@ -71,15 +71,48 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "PayPal order could not be verified" });
     }
 
-    const unit = order.purchase_units?.[0];
-    const gameId = String(unit?.custom_id || unit?.reference_id || "");
-    const product = PRODUCTS[gameId];
-    const expectedAmount = product ? (product.amount / 100).toFixed(2) : null;
-    if (!product || order.intent !== "CAPTURE" || order.status !== "APPROVED" ||
-        unit?.amount?.currency_code !== "PHP" || unit?.amount?.value !== expectedAmount) {
-      return res.status(400).json({ error: "PayPal order does not match a valid product" });
-    }
+    
+const unit = order.purchase_units?.[0];
 
+const gameId = String(
+  unit?.custom_id || unit?.reference_id || ""
+);
+
+const product = PRODUCTS[gameId];
+
+const expectedAmount = product
+  ? product.amount
+  : null;
+
+const actualAmount = Number(unit?.amount?.value);
+const actualAmountCentavos = Number.isFinite(actualAmount)
+  ? Math.round(actualAmount * 100)
+  : null;
+
+const checks = {
+  productFound: Boolean(product),
+  gameId,
+  intent: order.intent,
+  status: order.status,
+  currency: unit?.amount?.currency_code,
+  actualAmountCentavos,
+  expectedAmountCentavos: expectedAmount
+};
+
+if (
+  !product ||
+  order.intent !== "CAPTURE" ||
+  order.status !== "APPROVED" ||
+  unit?.amount?.currency_code !== "PHP" ||
+  actualAmountCentavos !== expectedAmount
+) {
+  console.error("PayPal validation failed:", checks);
+
+  return res.status(400).json({
+    error: "PayPal order validation failed. Check Vercel function logs."
+  });
+}
+   
     const captureResponse = await fetch(`${PAYPAL_BASE}/v2/checkout/orders/${encodeURIComponent(orderID)}/capture`, {
       method: "POST",
       headers: {
