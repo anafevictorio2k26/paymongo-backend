@@ -62,7 +62,7 @@ export default async function handler(req, res) {
               name: product.name,
               quantity: 1
             }],
-            payment_method_types: ["gcash", "qrph"],
+            payment_method_types: ["qrph"],
             success_url: "https://raymond-apk-store.web.app/download.html",
             cancel_url: "https://raymond-apk-store.web.app/index.html"
           }
