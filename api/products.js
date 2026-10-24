@@ -1,8 +1,15 @@
 export const PRODUCTS = {
-  "nba2k26": {
-    "id": "nba2k26",
-    "name": "NBA 2K27",
-    "amount": 25000
+  "nba2k27": {
+    id: "nba2k27",
+    name: "NBA 2K27",
+    amount: 25000,
+    category: "Android Game",
+    description: "Experience the most immersive basketball action on mobile with updated rosters, enhanced graphics, and smoother controls.",
+    screenshots: [
+      "images/nba2k27-1.webp",
+      "images/nba2k27-2.webp"
+    ],
+    trailerId: "GosZZkCf5Kc?si=G7djChlyIFwn1z-1"
   },
   "re4m": {
     "id": "re4m",
