@@ -63,7 +63,7 @@ export default async function handler(req, res) {
               quantity: 1
             }],
             payment_method_types: ["qrph"],
-            success_url: "https://raymond-apk-store.web.app/download.html?game=${gameId}",
+            success_url: `https://raymond-apk-store.web.app/download.html?game=${gameId}`,
             cancel_url: "https://raymond-apk-store.web.app/index.html"
           }
         }
