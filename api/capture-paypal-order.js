@@ -103,7 +103,7 @@ if (
   !product ||
   order.intent !== "CAPTURE" ||
   order.status !== "APPROVED" ||
-  unit?.amount?.currency_code !== "PHP" ||
+  unit?.amount?.currency_code !== "USD" ||
   actualAmountCentavos !== expectedAmount
 ) {
   console.error("PayPal validation failed:", checks);
@@ -140,7 +140,7 @@ if (
   captureData.id !== orderID ||
   captureData.status !== "COMPLETED" ||
   capture?.status !== "COMPLETED" ||
-  capture?.amount?.currency_code !== "PHP" ||
+  capture?.amount?.currency_code !== "USD" ||
   capturedAmountCentavos !== expectedAmount
 ) {
   console.error("PayPal capture verification failed:", {
