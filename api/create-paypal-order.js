@@ -74,7 +74,7 @@ export default async function handler(req, res) {
           reference_id: product.id,
           custom_id: product.id,
           description: product.name,
-          amount: { currency_code: "PHP", value: (product.amount / 100).toFixed(2) }
+          amount: { currency_code: "USD", value: (product.amount / 100).toFixed(2) }
         }],
         application_context: {
           brand_name: "Raymond Games Store",
