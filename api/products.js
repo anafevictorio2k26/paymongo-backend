@@ -11,6 +11,21 @@ export const PRODUCTS = {
     ],
     trailerId: "GosZZkCf5Kc?si=G7djChlyIFwn1z-1"
   },
+  "tr": {
+    "id": "tr",
+    "name": "Tomb Raider™",
+    "amount": 25000
+  },
+  "sifu": {
+    "id": "sifu",
+    "name": "Sifu",
+    "amount": 20000
+  },
+  "mhr": {
+    "id": "mhr",
+    "name": "MONSTER HUNTER RISE NETFLIX",
+    "amount": 20000
+  },
   "re4m": {
     "id": "re4m",
     "name": "Resident Evil 4 Mobile",
