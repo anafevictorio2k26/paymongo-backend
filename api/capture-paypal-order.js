@@ -1,19 +1,3 @@
-export default async function handler(req, res) {
-// Calculate expected USD amount dynamically during verification
-const pesoAmount = product ? product.amount / 100 : 0;
-const expectedUsdAmount = Number((pesoAmount / 63.76).toFixed(2));
-const actualAmount = Number(unit?.amount?.value);
-
-if (
-  !product ||
-  order.intent !== "CAPTURE" ||
-  order.status !== "APPROVED" ||
-  unit?.amount?.currency_code !== "USD" ||
-  actualAmount !== expectedUsdAmount
-) {
-  // validation error handling...
-}
-
 import { PRODUCTS } from "./products.js";
 
 function setCors(req, res) {
@@ -87,48 +71,38 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "PayPal order could not be verified" });
     }
 
-    
-const unit = order.purchase_units?.[0];
+    const unit = order.purchase_units?.[0];
+    const gameId = String(unit?.custom_id || unit?.reference_id || "");
+    const product = PRODUCTS[gameId];
 
-const gameId = String(
-  unit?.custom_id || unit?.reference_id || ""
-);
+    // Compute expected USD amount dynamically
+    const pesoAmount = product ? product.amount / 100 : 0;
+    const expectedUsdAmount = Number((pesoAmount / 63.76).toFixed(2));
+    const actualAmount = Number(unit?.amount?.value);
 
-const product = PRODUCTS[gameId];
+    const checks = {
+      productFound: Boolean(product),
+      gameId,
+      intent: order.intent,
+      status: order.status,
+      currency: unit?.amount?.currency_code,
+      actualAmount,
+      expectedUsdAmount
+    };
 
-const expectedAmount = product
-  ? product.amount
-  : null;
+    if (
+      !product ||
+      order.intent !== "CAPTURE" ||
+      order.status !== "APPROVED" ||
+      unit?.amount?.currency_code !== "USD" ||
+      actualAmount !== expectedUsdAmount
+    ) {
+      console.error("PayPal validation failed:", checks);
+      return res.status(400).json({
+        error: "PayPal order validation failed. Check Vercel function logs."
+      });
+    }
 
-const actualAmount = Number(unit?.amount?.value);
-const actualAmountCentavos = Number.isFinite(actualAmount)
-  ? Math.round(actualAmount * 100)
-  : null;
-
-const checks = {
-  productFound: Boolean(product),
-  gameId,
-  intent: order.intent,
-  status: order.status,
-  currency: unit?.amount?.currency_code,
-  actualAmountCentavos,
-  expectedAmountCentavos: expectedAmount
-};
-
-if (
-  !product ||
-  order.intent !== "CAPTURE" ||
-  order.status !== "APPROVED" ||
-  unit?.amount?.currency_code !== "USD" ||
-  actualAmountCentavos !== expectedAmount
-) {
-  console.error("PayPal validation failed:", checks);
-
-  return res.status(400).json({
-    error: "PayPal order validation failed. Check Vercel function logs."
-  });
-}
-   
     const captureResponse = await fetch(`${PAYPAL_BASE}/v2/checkout/orders/${encodeURIComponent(orderID)}/capture`, {
       method: "POST",
       headers: {
@@ -139,39 +113,34 @@ if (
     });
     const captureData = await captureResponse.json();
     if (!captureResponse.ok) {
-      // If a previous request already captured it, the caller can retry only after checking PayPal's order status.
       console.error("PayPal capture failed:", captureResponse.status, captureData?.name || "unknown");
       return res.status(502).json({ error: "Unable to capture PayPal payment" });
     }
 
     const capturedUnit = captureData.purchase_units?.[0];
     const capture = capturedUnit?.payments?.captures?.[0];
-    
-const capturedAmount = Number(capture?.amount?.value);
-const capturedAmountCentavos = Number.isFinite(capturedAmount)
-  ? Math.round(capturedAmount * 100)
-  : null;
+    const capturedAmount = Number(capture?.amount?.value);
 
-if (
-  captureData.id !== orderID ||
-  captureData.status !== "COMPLETED" ||
-  capture?.status !== "COMPLETED" ||
-  capture?.amount?.currency_code !== "USD" ||
-  capturedAmountCentavos !== expectedAmount
-) {
-  console.error("PayPal capture verification failed:", {
-    orderIdMatches: captureData.id === orderID,
-    orderStatus: captureData.status,
-    captureStatus: capture?.status,
-    currency: capture?.amount?.currency_code,
-    capturedAmountCentavos,
-    expectedAmountCentavos: expectedAmount
-  });
+    if (
+      captureData.id !== orderID ||
+      captureData.status !== "COMPLETED" ||
+      capture?.status !== "COMPLETED" ||
+      capture?.amount?.currency_code !== "USD" ||
+      capturedAmount !== expectedUsdAmount
+    ) {
+      console.error("PayPal capture verification failed:", {
+        orderIdMatches: captureData.id === orderID,
+        orderStatus: captureData.status,
+        captureStatus: capture?.status,
+        currency: capture?.amount?.currency_code,
+        capturedAmount,
+        expectedUsdAmount
+      });
+      return res.status(402).json({
+        error: "PayPal payment is not confirmed"
+      });
+    }
 
-  return res.status(402).json({
-    error: "PayPal payment is not confirmed"
-  });
-}
     return res.status(200).json({
       success: true,
       gameId: product.id,
