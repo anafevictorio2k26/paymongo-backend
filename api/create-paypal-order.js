@@ -1,43 +1,3 @@
-export default async function handler(req, res) {
-  if (!handleMethod(req, res)) return;
-
-  try {
-    const gameId = String(req.body?.gameId || "");
-    const product = PRODUCTS[gameId];
-    if (!product) return res.status(400).json({ error: "Invalid product" });
-
-    // 1. Convert your stored product amount (e.g. centavos/PHP) to a standard peso value
-    const pesoAmount = product.amount / 100; 
-
-    // 2. Automatically divide by the current exchange rate (63.76) to get USD
-    const exchangeRate = 63.76;
-    const usdAmount = (pesoAmount / exchangeRate).toFixed(2); // e.g., 250 / 63.76 = $3.92 USD
-
-    const accessToken = await getPayPalAccessToken();
-    const response = await fetch(`${PAYPAL_BASE}/v2/checkout/orders`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        intent: "CAPTURE",
-        purchase_units: [{
-          reference_id: product.id,
-          custom_id: product.id,
-          description: product.name,
-          amount: { currency_code: "USD", value: usdAmount } // Uses the dynamic USD value
-        }],
-        application_context: {
-          brand_name: "Raymond Games Store",
-          user_action: "PAY_NOW",
-          return_url: "https://raymond-apk-store.web.app/paypal-return.html",
-          cancel_url: "https://raymond-apk-store.web.app/index.html?paypal=cancelled"
-        }
-      })
-    });
-    // ... rest of your code
-
 import { PRODUCTS } from "./products.js";
 
 function setCors(req, res) {
@@ -101,6 +61,11 @@ export default async function handler(req, res) {
     const product = PRODUCTS[gameId];
     if (!product) return res.status(400).json({ error: "Invalid product" });
 
+    // Dynamically convert stored PHP centavos to USD using current exchange rate (63.76)
+    const pesoAmount = product.amount / 100;
+    const exchangeRate = 63.76;
+    const usdAmount = (pesoAmount / exchangeRate).toFixed(2);
+
     const accessToken = await getPayPalAccessToken();
     const response = await fetch(`${PAYPAL_BASE}/v2/checkout/orders`, {
       method: "POST",
@@ -114,7 +79,7 @@ export default async function handler(req, res) {
           reference_id: product.id,
           custom_id: product.id,
           description: product.name,
-          amount: { currency_code: "USD", value: (product.amount / 100).toFixed(2) }
+          amount: { currency_code: "USD", value: usdAmount }
         }],
         application_context: {
           brand_name: "Raymond Games Store",
