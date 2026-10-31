@@ -2,7 +2,7 @@ export const PRODUCTS = {
   "nba2k27": {
     id: "nba2k27",
     name: "NBA 2K27",
-    amount: 25000,
+    amount: 100,
     category: "Android Game",
     description: "Experience the most immersive basketball action on mobile with updated rosters, enhanced graphics, and smoother controls.",
     screenshots: [
@@ -14,12 +14,12 @@ export const PRODUCTS = {
   "re4m": {
     "id": "re4m",
     "name": "Resident Evil 4 Mobile",
-    "amount": 20000
+    "amount": 100
   },
   "re4": {
     "id": "re4",
     "name": "Resident Evil 4 Full",
-    "amount": 30000
+    "amount": 100
   },
   "rdr": {
     "id": "rdr",
