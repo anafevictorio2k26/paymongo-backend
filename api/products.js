@@ -26,6 +26,26 @@ export const PRODUCTS = {
     "name": "MONSTER HUNTER RISE NETFLIX",
     "amount": 20000
   },
+  "srt3": {
+    "id": "srt3",
+    "name": "Saints Row: The Third",
+    "amount": 30000
+  },
+  "ha": {
+    "id": "ha",
+    "name": "Hitman: Absolution",
+    "amount": 25000
+  },
+  "demr": {
+    "id": "demr",
+    "name": "Disney Epic Mickey: Rebrushed",
+    "amount": 25000
+  },
+  "nfsu2": {
+    "id": "nfsu2",
+    "name": "Need for Speed: Underground 2",
+    "amount": 25000
+  },
   "re4m": {
     "id": "re4m",
     "name": "Resident Evil 4 Mobile",
