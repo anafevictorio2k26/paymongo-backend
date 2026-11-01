@@ -44,7 +44,7 @@ export const PRODUCTS = {
   "nfsu2": {
     "id": "nfsu2",
     "name": "Need for Speed: Underground 2",
-    "amount": 25000
+    "amount": 20000
   },
   "re4m": {
     "id": "re4m",
