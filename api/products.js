@@ -36,6 +36,11 @@ export const PRODUCTS = {
     "name": "Hitman: Absolution",
     "amount": 25000
   },
+    "ga": {
+    "id": "ga",
+    "name": "GRID™ Autosport",
+    "amount": 15000
+  },
   "demr": {
     "id": "demr",
     "name": "Disney Epic Mickey: Rebrushed",
