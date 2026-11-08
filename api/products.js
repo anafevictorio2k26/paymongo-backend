@@ -3,7 +3,7 @@ export const PRODUCTS = {
     id: "nba2k27",
     name: "NBA 2K27",
     amount: 25000,
-    gumroadUrl: "https://evictoria2.gumroad.com/l/nba2k27"
+    gumroadUrl: "https://evictoria2.gumroad.com/l/2027"
   },
   "tr": {
     "id": "tr",
